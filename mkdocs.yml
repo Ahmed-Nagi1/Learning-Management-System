@@ -1,0 +1,12 @@
+site_name: LMS
+site_description: This project is a Learning Management System (LMS) API designed to facilitate the management of courses and their associated modules. Built using Django and Django Rest Framework (DRF), it provides a structured and secure platform for organizing educational content. The API ensures that instructors have full control over their courses while maintaining a clear and accessible structure for learners. With a focus on scalability and usability, this project serves as a foundational backend for modern e-learning platforms, enabling seamless content delivery and management.
+repo_url: https://github.com/Ahmed-Nagi1/Learning-Management-System
+site_dir: site
+copyright: Copyright &copy; 2020, <a href="https://github.com/Ahmed-Nagi1">Ahmed-Nagi1</a>.
+dev_addr: 0.0.0.0:8001
+
+nav:
+  - Home: 'index.md'
+  - API:
+    - Authentication: 'api/authentication.md'
+    - Users: 'api/users.md'
