@@ -13,8 +13,8 @@ Welcome to the Learning Management System (LMS) API! This project is a robust an
 ## Technologies Used
 
 - **Backend**: Django, Django Rest Framework (DRF)
-- **Authentication**: Token Authentication
-- **Database**: PostgreSQL (or any Django-supported database)
+- **Authentication**: Dj Rest Auth
+- **Database**: PostgreSQL
 - **API Documentation**: Auto-generated using DRF’s browsable API.
 
 ## Getting Started
@@ -25,39 +25,23 @@ Welcome to the Learning Management System (LMS) API! This project is a robust an
 - Django 5.0+
 - Django Rest Framework 3.14+
 
-### Installation
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/lms-api.git
-    cd lms-api
-    ```
+# Prerequisites
 
-2. Create a virtual environment and activate it:
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
-    ```
+- [Docker](https://docs.docker.com/docker-for-mac/install/)  
 
-3. Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
+# Local Development
 
-4. Set up the database:
-    ```bash
-    python manage.py migrate
-    ```
+Start the dev server for local development:
+```bash
+docker-compose up
+```
 
-5. Create a superuser for admin access:
-    ```bash
-    python manage.py createsuperuser
-    ```
+Run a command inside the docker container:
 
-6. Run the development server:
-    ```bash
-    python manage.py runserver
-    ```
+```bash
+docker-compose run --rm web [command]
+```
 
 ## API Endpoints
 
@@ -98,20 +82,3 @@ This project is licensed under the MIT License. See the LICENSE file for details
 Feel free to explore the API and contribute to its development. For any questions or feedback, please open an issue or contact the maintainers. Happy coding! 🚀
 
 This README is clear, concise, and provides all the necessary information for users and contributors.
-
-# Prerequisites
-
-- [Docker](https://docs.docker.com/docker-for-mac/install/)  
-
-# Local Development
-
-Start the dev server for local development:
-```bash
-docker-compose up
-```
-
-Run a command inside the docker container:
-
-```bash
-docker-compose run --rm web [command]
-```
