@@ -19,18 +19,12 @@ Welcome to the Learning Management System (LMS) API! This project is a robust an
 
 ## Getting Started
 
-### Prerequisites
-
-- Python 3.8+
-- Django 5.0+
-- Django Rest Framework 3.14+
-
 
 # Prerequisites
 
 - [Docker](https://docs.docker.com/docker-for-mac/install/)  
 
-# Local Development
+## Local Development
 
 Start the dev server for local development:
 ```bash
