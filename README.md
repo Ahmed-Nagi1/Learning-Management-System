@@ -15,7 +15,7 @@ Welcome to the Learning Management System (LMS) API! This project is a robust an
 - **Backend**: Django, Django Rest Framework (DRF)
 - **Authentication**: Dj Rest Auth
 - **Database**: PostgreSQL
-- **API Documentation**: Auto-generated using DRF’s browsable API.
+- **API Documentation**: Auto-generated using drf_yasg browsable API.
 
 ## Getting Started
 
@@ -39,21 +39,12 @@ docker-compose run --rm web [command]
 
 ## API Endpoints
 
-### Courses
+This project includes a fully interactive API documentation powered by drf_yasg, a library for generating Swagger and ReDoc documentation for Django REST Framework (DRF).
+Features
 
-- `GET /courses/` - List all courses.
-- `POST /courses/` - Create a new course.
-- `GET /courses/{id}/` - Retrieve a specific course.
-- `PUT /courses/{id}/` - Update a course.
-- `DELETE /courses/{id}/` - Delete a course.
-
-### Modules
-
-- `GET /modules/?course_id={id}` - List modules for a specific course.
-- `POST /modules/` - Create a new module.
-- `GET /modules/{id}/` - Retrieve a specific module.
-- `PUT /modules/{id}/` - Update a module.
-- `DELETE /modules/{id}/` - Delete a module.
+* Interactive Swagger UI: Test API endpoints directly within the browser.
+* ReDoc Interface: Professionally styled documentation for better readabi* lity.
+* Auto-generated: No need to write documentation manually; drf_yasg extracts t* he information from DRF views and serializers.
 
 ## Contributing
 

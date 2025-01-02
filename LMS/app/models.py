@@ -7,6 +7,7 @@ class CustomUser(AbstractUser):
     role = {
         ('student', 'student'),
         ('instructor', 'instructor'),
+        ('admin', 'admin'),
     }
     first_name = None  
     last_name = None   

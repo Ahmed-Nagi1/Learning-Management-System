@@ -5,7 +5,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, BasePermission
-from .permissions import IsInstructor
+from .permissions import IsInstructor, IsAdmin
 
 class CourseViewSet(ModelViewSet):
     """
@@ -246,8 +246,6 @@ class EnrollmentViewSet(ModelViewSet):
         enrollment.delete()
         return Response({"message": "Enrollment deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
     
-    
-    
 class QuizViewSet(ModelViewSet):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
@@ -302,3 +300,41 @@ class QuizViewSet(ModelViewSet):
         # Delete the quiz
         quiz.delete()
         return Response({"message": "Quiz deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+   
+    
+class CertificateViewSet(ModelViewSet):
+    queryset = Certificate.objects.all()
+    serializer_class = CertificateSerializer
+    permission_classes = []
+    
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = [IsInstructor]
+        elif self.action in ['update', 'destroy']:
+            permission_classes = [IsAdmin]
+        else:
+            permission_classes = []  
+        return [permission() for permission in permission_classes]
+        
+        
+    def create(self, request, *args, **kwargs):
+        
+        # Get course data from the request
+        courseId = request.data.get('course')
+        student_id = request.data.get('student')
+        # Check if the course exists
+        try:
+            course = Course.objects.get(id=courseId)
+            student = User.objects.get(id=student_id, role='student')
+        except User.DoesNotExist:
+            return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Course.DoesNotExist:
+            return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+        # Ensure the current instructor is the course instructor
+        if course.instructor != request.user:
+            return Response({"error": "You can only create certificate for your own courses"}, status=status.HTTP_403_FORBIDDEN)
+        
+        certificate = Certificate.objects.create(course=course, student=student)
+        serializer = self.get_serializer(certificate)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    

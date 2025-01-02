@@ -38,3 +38,9 @@ class QuizSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
         fields = ['id', 'title', 'module', 'questions']
+        
+        
+class CertificateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Certificate
+        fields = ['student', 'course', 'issued_at', 'certificate_file']
