@@ -86,7 +86,6 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "lms.users",
     "lms.accounts",
     "lms.app",
     # Your stuff: custom apps go here
@@ -351,12 +350,12 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
-        'dj_rest_auth.jwt_auth.JWTCookieAuthentic ation',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticated",
         ),
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoS chema",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 REST_AUTH = {
     'LOGIN_SERIALIZER': 'lms.accounts.serializers.CustomLoginSerializer',
@@ -373,7 +372,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
+    # 'SIGNING_KEY': SECRET_KEY,
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup

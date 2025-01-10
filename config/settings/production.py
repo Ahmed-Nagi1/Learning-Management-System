@@ -204,3 +204,5 @@ SPECTACULAR_SETTINGS["SERVERS"] = [
 ]
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+SIMPLE_JWT["SIGNING_KEY"]=SECRET_KEY

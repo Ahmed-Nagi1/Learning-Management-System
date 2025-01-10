@@ -1,6 +1,10 @@
 from rest_framework import serializers
-
-
+from .models import *
+from dj_rest_auth.serializers import LoginSerializer
+from django.contrib.auth import authenticate
+from django.utils.translation import gettext_lazy as _
+from allauth.account.models import EmailAddress
+from dj_rest_auth.registration.serializers import RegisterSerializer
 
 
 

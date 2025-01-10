@@ -1,8 +1,8 @@
 from allauth.account.adapter import DefaultAccountAdapter
-from django.contrib.sites.models import Site
+# from django.contrib.sites.models import Site
 
-current_site = Site.objects.get_current()
-site_domain = current_site.domain
+# current_site = Site.objects.get_current()
+site_domain = "current_site.domain"
 
 class CustomAccountAdapter(DefaultAccountAdapter):
     
