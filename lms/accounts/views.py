@@ -7,17 +7,27 @@ from rest_framework.permissions import AllowAny
 from .serializers import ChangeEmailSerializer
 
 
-class CustomConfirmEmailView(APIView):
+class ConfirmEmailAPIView(APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request, *args, **kwargs):
-        serializer = ChangeEmailSerializer(data=request.data)
-        if serializer.is_valid():
-            user = request.user
-            new_email = serializer.validated_data['email']
+        key = request.data.get("key")
+        if not key:
+            return Response({"detail": _("Key is required.")}, status=status.HTTP_400_BAD_REQUEST)
 
-            # تغيير البريد الإلكتروني
-            email_address, created = EmailAddress.objects.get_or_create(user=user, email=new_email)
-            if not email_address.verified:
-                send_email_confirmation(request, user, email=email_address.email)
+        try:
+            # Attempt to retrieve the email confirmation using HMAC key
+            email_confirmation = EmailConfirmationHMAC.from_key(key)
+            if email_confirmation is None:
+                # If HMAC fails, fallback to database key
+                email_confirmation = EmailConfirmation.objects.get(key=key)
+        except EmailConfirmation.DoesNotExist:
+            return Response({"detail": _("Invalid or expired key.")}, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response({"message": "تم إرسال بريد تأكيد إلى البريد الإلكتروني الجديد."}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if email_confirmation.email_address.verified:
+            return Response({"detail": _("Email is already verified.")}, status=status.HTTP_200_OK)
+
+        # Verify the email
+        email_confirmation.confirm(request)
+
+        return Response({"detail": _("Email successfully verified.")}, status=status.HTTP_200_OK)

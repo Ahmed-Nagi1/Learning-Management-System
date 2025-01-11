@@ -7,7 +7,6 @@ class CustomUserAdmin(admin.ModelAdmin):
 
     # تخصيص الحقول
     fieldsets = (
-        (None, {'fields': ('username', 'password')}),
         ('Personal Info', {'fields': ('email', 'full_name', 'role')}),
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important Dates', {'fields': ('last_login', 'date_joined')}),
@@ -16,12 +15,11 @@ class CustomUserAdmin(admin.ModelAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'password1', 'password2', 'email', 'full_name', 'role'),
+            'fields': ('password1', 'password2', 'email', 'full_name', 'role'),
         }),
     )
 
-    list_display = ('username', 'email', 'full_name', 'role', 'is_staff', 'is_active')
-    search_fields = ('username', 'email', 'full_name')
-    ordering = ('username',)
+    list_display = ('email', 'full_name', 'role', 'is_staff', 'is_active')
+    search_fields = ('email', 'full_name')
 
 admin.site.register(CustomUser, CustomUserAdmin)

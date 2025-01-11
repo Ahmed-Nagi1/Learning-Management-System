@@ -14,7 +14,35 @@ SECRET_KEY = env(
     default="DM837WrWz7KIfZM2eb4swzqGlIG0VhhAIFNXf9KgamMtT42DTkHIEXfpF4N9rh2Y",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["localhost", "0.0.0.0", "127.0.0.1"]  # noqa: S104
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]  # حدد المضيفين المسموح بهم
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = False
+
+
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+    "accept",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
 
 # CACHES
 # ------------------------------------------------------------------------------
@@ -83,4 +111,3 @@ CELERY_TASK_EAGER_PROPAGATES = True
 # ------------------------------------------------------------------------------
 
 
-SIMPLE_JWT["SIGNING_KEY"]=SECRET_KEY
