@@ -12,4 +12,5 @@ urlpatterns = [
         PasswordResetConfirmView.as_view(),
         name='password_reset_confirm',
     ),
+    path('change-email/', views.ChangeEmailView.as_view(), name='change_email'),
 ]

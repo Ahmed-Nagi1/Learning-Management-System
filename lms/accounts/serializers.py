@@ -83,9 +83,25 @@ class CustomRegisterSerializer(RegisterSerializer):
 
 
 
-
 class ChangeEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
+    def validate_email(self, value):
+        if EmailAddress.objects.filter(email=value).exists() or User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("This email is already in use.")
+        return value
 
-
+    def save(self, user):
+        email = self.validated_data["email"]
+        EmailAddress.objects.filter(user=user, verified=False).delete() # حذف الايميلات السابقة
+        
+        email_address, created = EmailAddress.objects.get_or_create(
+            user=user,
+            email=email,
+            defaults={"primary": False, "verified": False}
+        )
+        
+        if created:
+            send_email_confirmation(self.context["request"], user, email=email)
+            
+        return email

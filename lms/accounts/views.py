@@ -2,10 +2,24 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.translation import gettext as _
-from allauth.account.models import EmailConfirmation, EmailConfirmationHMAC
-from rest_framework.permissions import AllowAny
+from allauth.account.models import EmailConfirmation, EmailConfirmationHMAC, EmailAddress
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import ChangeEmailSerializer
+from asgiref.sync import sync_to_async
 
+class ChangeEmailView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        serializer = ChangeEmailSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response({
+                "message": "Confirmation email has been sent to the new address.",
+                }, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
 
 class ConfirmEmailAPIView(APIView):
     permission_classes = [AllowAny]
@@ -29,5 +43,5 @@ class ConfirmEmailAPIView(APIView):
 
         # Verify the email
         email_confirmation.confirm(request)
-
-        return Response({"detail": _("Email successfully verified.")}, status=status.HTTP_200_OK)
+        email = email_confirmation.email_address.email
+        return Response({"detail": _("Email successfully verified."), "email": email}, status=status.HTTP_200_OK)
