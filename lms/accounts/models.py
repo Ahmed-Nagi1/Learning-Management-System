@@ -19,27 +19,25 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractUser):
-    # إزالة الحقل username من AbstractUser
+    ROLE_CHOICES = {
+        'student': 'Student',
+        'instructor': 'Instructor',
+        'admin': 'Admin',
+    }
     username = None  
     first_name = None  
     last_name = None  
 
-    # الحقول الخاصة بالمستخدم المخصص
     email = models.EmailField(unique=True)
     full_name = models.CharField(max_length=255, null=True, blank=True)
-    ROLE_CHOICES = [
-        ('student', 'Student'),
-        ('instructor', 'Instructor'),
-        ('admin', 'Admin'),
-    ]
+    image = models.ImageField(upload_to="account/profile_image/", null=True, blank=True)
+
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, null=True, blank=True)
 
-    # تخصيص مدير المستخدم
     objects = CustomUserManager()
 
-    # تحديد الحقول الأساسية
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []  # قائمة الحقول المطلوبة لإنشاء مستخدم عبر createsuperuser
+    REQUIRED_FIELDS = []  
 
     def __str__(self):
         return self.email

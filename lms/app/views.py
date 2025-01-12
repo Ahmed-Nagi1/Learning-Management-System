@@ -1,25 +1,44 @@
 from django.shortcuts import render
 from .serializers import *
 from .models import *
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from .permissions import IsInstructor, IsAdmin
+
+
+
+
+class CourseRead(ReadOnlyModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CourseSerializer
+    queryset = Course.objects.all()
+
+
 
 class CourseViewSet(ModelViewSet):
     """
     A ViewSet for viewing and editing Course instances.
     """
     permission_classes = [IsAuthenticated,]
-    queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    
+    def get_queryset(self):
+        """
+        Return courses belonging to the authenticated user.
+        """
+        user = self.request.user
+        return Course.objects.filter(instructor=user)
 
     def perform_create(self, serializer):
         """
         Save the post data when creating a new course.
         """
-        serializer.save(instructor=self.request.user)
+        user = self.request.user
+
+
+        serializer.save(instructor=user)
 
     def perform_update(self, serializer):
         """
@@ -43,6 +62,14 @@ class CourseViewSet(ModelViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
         instance.delete()
+
+
+
+
+
+
+
+
 
 class ModuleViewSet(ModelViewSet):
     """
