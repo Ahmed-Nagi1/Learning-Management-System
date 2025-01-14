@@ -13,7 +13,7 @@ class Course(models.Model):
     image = models.ImageField(upload_to="courses/image", null=True)
     is_paid = models.BooleanField(default=False)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    instructor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='courses_taught', verbose_name="Instructor")      
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='courses_taught', verbose_name="Instructor")      
     rating = models.PositiveSmallIntegerField(null=True, blank=True)  
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
@@ -33,9 +33,10 @@ class Course(models.Model):
 class Module(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     title = models.CharField(max_length=255, verbose_name="Module Title")
-    description = models.TextField(verbose_name="Module Description")
+    description = models.TextField(null=True, verbose_name="Module Description")
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='modules', verbose_name="Course")
     order = models.PositiveIntegerField(default=0, verbose_name="Order", unique=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Created By")
 
     def str(self):
         return self.title
@@ -44,10 +45,12 @@ class Module(models.Model):
 class Lesson(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     title = models.CharField(max_length=255, verbose_name="Lesson Title")
+    description = models.TextField(null=True, verbose_name="Lesson Description")
     content = models.TextField(verbose_name="Lesson Content")
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='lessons', verbose_name="Module")
     order = models.PositiveIntegerField(default=0, verbose_name="Order")
     file = models.FileField(upload_to='lesson_files/', null=True, blank=True, verbose_name="Attached File")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Created By")
 
     def str(self):
         return self.title
