@@ -279,4 +279,3 @@ lms/media/
 .env
 
 # Ignore Django migrations
-*/migrations/

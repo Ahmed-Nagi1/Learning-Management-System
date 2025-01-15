@@ -5,7 +5,7 @@ current_site = Site.objects.get_current()
 site_domain = current_site.domain
 
 class CustomAccountAdapter(DefaultAccountAdapter):
-    
+        
     def get_email_confirmation_url(self, request, emailconfirmation):
         return f"http://{site_domain}/account/email-confirmation/{emailconfirmation.key}/"
     

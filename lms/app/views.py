@@ -90,6 +90,7 @@ class LessonViewSet(ModelViewSet):
         """
         Return a specific lesson within a specific module only if the user is authorized.
         """
+
         lesson_id = self.request.query_params.get('lesson_id')  # Get lesson ID from the request
         module_id = self.request.query_params.get('module_id')  # Get module ID from the request
 
@@ -132,6 +133,74 @@ class LessonViewSet(ModelViewSet):
 
         # Save the lesson with the module and created_by user
         serializer.save(module=module, created_by=self.request.user)
+
+    @action(detail=False, methods=['patch'], url_path='update-lesson')
+    def patch_lesson(self, request, *args, **kwargs):
+        """
+        Custom PATCH method to update a lesson.
+        """
+        # الحصول على معرف الكائن (lesson_id) من الـ URL
+        lesson_id = self.request.query_params.get('lesson_id')
+        if not lesson_id:
+            return Response({"detail": "Lesson ID is required in the URL."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # البحث عن الدرس
+        lesson = Lesson.objects.filter(id=lesson_id).first()
+        if not lesson:
+            return Response({"detail": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # التحقق من الصلاحيات (مالك الكورس أو مسجل فيه)
+        is_owner = lesson.module.course.owner == request.user
+
+        if not is_owner:
+            raise PermissionDenied("You do not have permission to update this lesson.")
+
+        # تحديث الدرس باستخدام البيانات المرسلة في الطلب
+        serializer = self.get_serializer(lesson, data=request.data, partial=True)  # partial=True لتحديث الحقول المطلوبة فقط
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+    
+    @action(detail=False, methods=['delete'], url_path='delete-lesson')
+    def delete_lesson(self, request, *args, **kwargs):
+        """
+        Custom DELETE method to delete a lesson.
+        """
+        # الحصول على معرف الكائن (lesson_id) من الـ URL
+        lesson_id = request.query_params.get('lesson_id')
+        if not lesson_id:
+            return Response(
+                {"detail": "Lesson ID is required in the URL."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # البحث عن الدرس
+        try:
+            lesson = Lesson.objects.get(id=lesson_id)
+        except Lesson.DoesNotExist:
+            return Response(
+                {"detail": "Lesson not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # التحقق من الصلاحيات (مالك الكورس أو مسجل فيه)
+        is_owner = lesson.module.course.owner == request.user
+
+        if not is_owner:
+            raise PermissionDenied("You do not have permission to delete this lesson.")
+
+        # حذف الدرس
+        lesson.delete()
+
+        return Response(
+            {"detail": "Lesson deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 

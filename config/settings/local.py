@@ -8,18 +8,21 @@ from .base import env
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
+DEBUG = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env(
     "DJANGO_SECRET_KEY",
     default="DM837WrWz7KIfZM2eb4swzqGlIG0VhhAIFNXf9KgamMtT42DTkHIEXfpF4N9rh2Y",
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "8000-idx-lms-1736949042591.cluster-qtqwjj3wgzff6uxtk26wj7fzq6.cloudworkstations.dev"]  # حدد المضيفين المسموح بهم
+ALLOWED_HOSTS = ["127.0.0.1", "localhost",
+ "8000-idx-lms-1736953337728.cluster-p6qcyjpiljdwusmrjxdspyb5m2.cloudworkstations.dev"
+ ]  # حدد المضيفين المسموح بهم
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://8000-idx-lms-1736949042591.cluster-qtqwjj3wgzff6uxtk26wj7fzq6.cloudworkstations.dev'
+    'https://8000-idx-lms-1736953337728.cluster-p6qcyjpiljdwusmrjxdspyb5m2.cloudworkstations.dev'
 ]
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = False
