@@ -10,13 +10,13 @@ class CourseAdmin(admin.ModelAdmin):
 
 @admin.register(Module)
 class ModuleAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'course', 'order')
+    list_display = ('id', 'title', 'course')
     search_fields = ('title', 'course__title')
     list_filter = ('course',)
 
 @admin.register(Lesson)
 class LessonAdmin(admin.ModelAdmin):
-    list_display = ('title', 'module', 'order')
+    list_display = ('title', 'module')
     search_fields = ('title', 'module__title')
     list_filter = ('module',)
 

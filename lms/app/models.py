@@ -35,7 +35,6 @@ class Module(models.Model):
     title = models.CharField(max_length=255, verbose_name="Module Title")
     description = models.TextField(null=True, verbose_name="Module Description")
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='modules', verbose_name="Course")
-    order = models.PositiveIntegerField(default=0, verbose_name="Order", unique=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Created By")
 
     def str(self):
@@ -48,7 +47,6 @@ class Lesson(models.Model):
     description = models.TextField(null=True, verbose_name="Lesson Description")
     content = models.TextField(verbose_name="Lesson Content")
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='lessons', verbose_name="Module")
-    order = models.PositiveIntegerField(default=0, verbose_name="Order")
     file = models.FileField(upload_to='lesson_files/', null=True, blank=True, verbose_name="Attached File")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Created By")
 

@@ -24,18 +24,19 @@ class LessonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ['id', 'title', 'description', 'content', 'module', 'order', 'file']
+        fields = ['id', 'title', 'description', 'content', 'module', 'file']
 
 
 class ModuleSerializer(serializers.ModelSerializer):
     lessons = serializers.SerializerMethodField()
     class Meta:
         model = Module
-        fields = ['id', 'title', 'description', 'lessons', 'course', 'order']
+        fields = ['id', 'title', 'description', 'lessons', 'course']
         read_only_fields = ['course', 'lessons']
         
     def get_lessons(self, obj):
         return obj.lessons.values('id', 'title', 'description')
+
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):

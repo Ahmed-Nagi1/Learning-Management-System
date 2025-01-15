@@ -55,7 +55,7 @@ class ModuleViewSet(ModelViewSet):
         if course_id:
             course = Course.objects.filter(id=course_id).first()
             if course:
-                return Module.objects.filter(course=course).order_by('order')
+                return Module.objects.filter(course=course)
         return Module.objects.none()
 
 
@@ -65,6 +65,10 @@ class ModuleViewSet(ModelViewSet):
         """
         course_id = self.request.data.get('course')
         course = Course.objects.filter(id=course_id, owner=self.request.user).first()
+        is_owner = course.owner == self.request.user
+        if not is_owner:
+            raise PermissionDenied("You do not have permission to create module.")
+        
         if not course:
             return Response(
                 {"detail": "This course not found."},
@@ -108,9 +112,26 @@ class LessonViewSet(ModelViewSet):
         is_enrolled = Enrollment.objects.filter(course=module.course, student=self.request.user).exists()
 
         if is_owner or is_enrolled:
+            
             return Lesson.objects.filter(id=lesson_id) # Return the lesson if the user is authorized
 
         return Lesson.objects.none()  # Deny access if the user is not authorized
+        
+    def perform_create(self, serializer):
+        """
+        Customize the creation of a lesson to include the module and the user who created it.
+        """
+        module_id = self.request.data.get('module')  # Get the module ID from the request
+        module = Module.objects.filter(id=module_id).first()  # Fetch the module
+        is_owner = module.course.owner == self.request.user
+        if not is_owner:
+            raise PermissionDenied("You do not have permission to create lessons in this module.")
+
+        if not module:
+            raise serializers.ValidationError({"module": "Module does not exist."})
+
+        # Save the lesson with the module and created_by user
+        serializer.save(module=module, created_by=self.request.user)
 
 
 
@@ -120,10 +141,10 @@ class EnrollmentViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'post', 'delete']
     
-    def retrieve(self, request, *args, **kwargs):
-        instance = Enrollment.objects.filter(user=request.user)
+    def list(self, request, *args, **kwargs):
+        instance = Enrollment.objects.filter(student=request.user)
         
-        serializer = self.get_serializer(instance)
+        serializer = self.get_serializer(instance, many=True)
         return Response(serializer.data) 
 
 
@@ -147,15 +168,6 @@ class EnrollmentViewSet(ModelViewSet):
         serializer = self.get_serializer(enrollment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def destroy(self, request, *args, **kwargs):
-        # Get the enrollment object to delete
-        enrollment = self.get_object()
-        if enrollment.student != request.user:
-            raise PermissionDenied("You do not have permission to delete this enrollment.")
-
-        # Delete the enrollment
-        enrollment.delete()
-        return Response({"detail": "Enrollment deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
     
     
 class QuizViewSet(ModelViewSet):

@@ -20,6 +20,9 @@ class IsOwnerOrReadOnly(BasePermission):
                 
             case "LessonViewSet":
                 return obj.created_by == request.user
+            
+            case "EnrollmentViewSet":
+                return obj.student == request.user
                 
 
     
