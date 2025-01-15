@@ -49,6 +49,7 @@ class Lesson(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='lessons', verbose_name="Module")
     file = models.FileField(upload_to='lesson_files/', null=True, blank=True, verbose_name="Attached File")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Created By")
+    #order = models.IntegerField(null=True, blank=True)
 
     def str(self):
         return self.title

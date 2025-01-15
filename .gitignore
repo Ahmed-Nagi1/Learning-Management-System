@@ -277,3 +277,6 @@ lms/media/
 .pytest_cache/
 .ipython/
 .env
+
+# Ignore Django migrations
+*/migrations/
