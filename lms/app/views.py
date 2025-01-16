@@ -259,8 +259,6 @@ class QuizViewSet(ModelViewSet):
         if module.course.owner != request.user:
             return Response({"detail": "You can only create quizzes for your own courses"}, status=status.HTTP_403_FORBIDDEN)
         # Create a new quiz
-        # data = request.data.copy()  # نسخ البيانات لتجنب التعديل على الأصل
-        # data.pop('module', None)  # إزالة المفتاح module إذا كان موجودًا
         quiz = Quiz.objects.create(module=module)
         serializer = self.get_serializer(quiz)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -295,40 +293,40 @@ class QuizViewSet(ModelViewSet):
         return Response({"detail": "Quiz deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
    
     
-class CertificateViewSet(ModelViewSet):
-    queryset = Certificate.objects.all()
-    serializer_class = CertificateSerializer
-    permission_classes = []
+# class CertificateViewSet(ModelViewSet):
+#     queryset = Certificate.objects.all()
+#     serializer_class = CertificateSerializer
+#     permission_classes = []
     
-    def get_permissions(self):
-        if self.action == 'create':
-            # permission_classes = [Isowner]
-            pass
-        elif self.action in ['update', 'destroy']:
-            permission_classes = [IsAdmin]
-        else:
-            permission_classes = []  
-        return [permission() for permission in permission_classes]
+#     def get_permissions(self):
+#         if self.action == 'create':
+#             # permission_classes = [Isowner]
+#             pass
+#         elif self.action in ['update', 'destroy']:
+#             permission_classes = [IsAdmin]
+#         # else:
+#         #     permission_classes = []  
+#         # return [permission() for permission in permission_classes]
         
         
-    def create(self, request, *args, **kwargs):
+#     def create(self, request, *args, **kwargs):
         
-        # Get course data from the request
-        courseId = request.data.get('course')
-        student_id = request.data.get('student')
-        # Check if the course exists
-        try:
-            course = Course.objects.get(id=courseId)
-            student = User.objects.get(id=student_id, role='student')
-        except User.DoesNotExist:
-            return Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
-        except Course.DoesNotExist:
-            return Response({"detail": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
-        # Ensure the current owner is the course owner
-        if course.owner != request.user:
-            return Response({"detail": "You can only create certificate for your own courses"}, status=status.HTTP_403_FORBIDDEN)
+#         # Get course data from the request
+#         courseId = request.data.get('course')
+#         student_id = request.data.get('student')
+#         # Check if the course exists
+#         try:
+#             course = Course.objects.get(id=courseId)
+#             student = User.objects.get(id=student_id, role='student')
+#         except User.DoesNotExist:
+#             return Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
+#         except Course.DoesNotExist:
+#             return Response({"detail": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+#         # Ensure the current owner is the course owner
+#         if course.owner != request.user:
+#             return Response({"detail": "You can only create certificate for your own courses"}, status=status.HTTP_403_FORBIDDEN)
         
-        certificate = Certificate.objects.create(course=course, student=student)
-        serializer = self.get_serializer(certificate)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         certificate = Certificate.objects.create(course=course, student=student)
+#         serializer = self.get_serializer(certificate)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
     

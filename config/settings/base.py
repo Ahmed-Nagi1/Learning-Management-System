@@ -75,6 +75,7 @@ THIRD_PARTY_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "allauth",
+    'allauth.headless',
     "allauth.account",
     "allauth.mfa",
     "allauth.socialaccount",
@@ -233,7 +234,7 @@ EMAIL_TIMEOUT = 5
 # Django Admin URL.
 ADMIN_URL = "admin/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = [("""Ahmed Nagi""", "ahmed10nagi@gmail.com")]
+ADMINS = [("""ص""", "e@gmail.com")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 # https://cookiecutter-django.readthedocs.io/en/latest/settings.html#other-environment-settings
@@ -330,8 +331,22 @@ ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = None
 # ACCOUNT_RATE_LIMITS = {
 #         "confirm_email": "1/4m", # 1 confirmation email every 4 minutes
 # }
+HEADLESS_FRONTEND_URLS = {
+    "account_confirm_email": "http://127.0.0.1:3000/account/email-confirmation/{key}/",
+    # Key placeholders are automatically populated. You are free to adjust this
+    # to your own needs, e.g.
+    #
+    # "https://app.project.org/account/email/verify-email?token={key}",
+    "account_reset_password": "https://app.project.org/account/password/reset",
+    "account_reset_password_from_key": "https://app.project.org/account/password/reset/key/{key}",
+    # "account_signup": "https://app.project.org/account/signup",
+    # Fallback in case the state containing the `next` URL is lost and the handshake
+    # with the third-party provider fails.
+    # "socialaccount_login_error": "https://app.project.org/account/provider/callback",
+}
+HEADLESS_ONLY = True
 # https://docs.allauth.org/en/latest/account/configuration.html
-ACCOUNT_ADAPTER = "lms.accounts.adapters.CustomAccountAdapter"
+# ACCOUNT_ADAPTER = "lms.accounts.adapters.CustomAccountAdapter"
 # https://docs.allauth.org/en/latest/account/forms.html
 # ACCOUNT_FORMS = {"signup": "lms.users.forms.UserSignupForm"}
 # https://docs.allauth.org/en/latest/socialaccount/configuration.html
@@ -353,6 +368,7 @@ REST_FRAMEWORK = {
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
     "DEFAULT_PERMISSION_CLASSES": (
+        'rest_framework.permissions.AllowAny',
         "rest_framework.permissions.IsAuthenticated",
         ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -384,8 +400,17 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Learning Management System API",
     "DESCRIPTION": "Documentation of API endpoints of Learning Management System",
     "VERSION": "1.0.0",
-    "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    # "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
     "SCHEMA_PATH_PREFIX": "/api/",
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 # Your stuff...
 # ------------------------------------------------------------------------------
+# CSRF_COOKIE_SECURE = False  # لأنك لا تستخدم HTTPS محليًا
+# CSRF_COOKIE_SAMESITE = 'None'  # للسماح بالطلبات عبر النطاقات
+# CSRF_COOKIE_HTTPONLY = False  # للسماح للـ JavaScript بالوصول إذا لزم الأمر
+
+# SESSION_COOKIE_SECURE = False
+# SESSION_COOKIE_SAMESITE = 'None'
+# SESSION_COOKIE_HTTPONLY = True
+

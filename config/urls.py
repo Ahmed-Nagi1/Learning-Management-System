@@ -12,13 +12,52 @@ from drf_spectacular.views import SpectacularSwaggerView
 from rest_framework.authtoken.views import obtain_auth_token
 from lms.accounts.views import *
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+
+class SetCookieExampleView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        # الحصول على قيمة 'target' من البيانات المرسلة مع الطلب
+        target = request.META.get('HTTP_ORIGIN', 'No origin provided') # افتراض قيمة افتراضية
+
+        # طباعة 'target' في وحدة التحكم
+        print(f"Target received: {target}")
+
+        # إعداد الاستجابة
+        response = Response({
+            "message": "Cookie set successfully!",
+            "target": target,  # إضافة 'target' إلى الاستجابة كإخراج اختباري
+        })
+
+        # إعداد الكوكي بدون أمان (HTTP فقط)
+        response.set_cookie(
+            key='my_cookie_name',          # اسم الكوكي
+            value='my_cookie_value',       # قيمة الكوكي
+            max_age=3600,                  # وقت انتهاء الصلاحية بالثواني
+            httponly=False,                # يمكن الوصول للكوكي من JavaScript
+            samesite=None,                 # السماح باستخدام الكوكي عبر المواقع (Cross-Site)
+        )
+
+        return response
+
+
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # User management
+    path("ex/", SetCookieExampleView.as_view(), name="ex"),
+    # path("users/", include("lms.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
+    path("auth/", include("allauth.headless.urls")),
     # Your stuff: custom urls includes go here
     # ...
     # Media files
@@ -31,11 +70,11 @@ if settings.DEBUG:
 # API URLS
 urlpatterns += [
 
-    path('authw/', include('dj_rest_auth.urls')),
-    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('auth/', include('lms.accounts.urls')),
+    # path('authw/', include('dj_rest_auth.urls')),
+    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    # path('auth/', include('lms.accounts.urls')),
 
-    path('app/', include('lms.app.urls')),
+    # path('app/', include('lms.app.urls')),
 
 
     # API base url
