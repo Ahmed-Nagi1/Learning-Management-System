@@ -15,7 +15,7 @@ class CourseViewSet(ModelViewSet):
     A ViewSet for viewing and editing Course instances.
     """
     queryset = Course.objects.all()
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     serializer_class = CourseSerializer
 
     def perform_create(self, serializer):

@@ -9,11 +9,14 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from allauth.account.utils import send_email_confirmation
 from rest_framework.response import Response
+from .validation_error import CustomValidationError
+
 
 
 User = get_user_model()
 
 class CustomLoginSerializer(LoginSerializer):
+    
     email = serializers.EmailField(required=True)
     password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
@@ -22,24 +25,28 @@ class CustomLoginSerializer(LoginSerializer):
         password = attrs.get('password')
 
         if not email or not password:
-            raise serializers.ValidationError(_("Please enter both email and password."))
+            raise CustomValidationError(_("Please enter both email and password."))
 
         # البحث عن المستخدم بالبريد الإلكتروني
         users = User.objects.filter(email=email)
+        email_address = EmailAddress.objects.filter(email=email).first()
 
         if not users.exists():
-            raise serializers.ValidationError(_("No account found with this email."))
+            raise CustomValidationError(_("No account found with this email."))
+        
+        if not email_address.verified: 
+            CustomValidationError(_("Email not verified. Please verify your email first."))
 
         if users.count() > 1:
-            raise serializers.ValidationError(_("Multiple accounts found with this email. Please contact support."))
+            raise CustomValidationError(_("Multiple accounts found with this email. Please contact support."))
 
         user = users.first()
 
         if not user.check_password(password):
-            raise serializers.ValidationError(_("Incorrect password."))
+            raise CustomValidationError(_("Incorrect password."))
 
         if not self.is_email_verified(user):
-            raise serializers.ValidationError(_("Email not verified. Please verify your email first."))
+            raise CustomValidationError(_("Email not verified. Please verify your email first."))
 
         # إضافة المستخدم إلى الـ attrs
         attrs['user'] = user
@@ -66,10 +73,10 @@ class CustomRegisterSerializer(RegisterSerializer):
         email_address = EmailAddress.objects.filter(email=email).first()
         if email_address:
             if email_address.verified: 
-                raise ValidationError({'email': 'This email is already.'})
+                CustomValidationError({'email': 'This email is already.'})
             else: 
                 send_email_confirmation(request, email_address.user)
-                raise ValidationError({'email': 'A confirmation email has been sent. Please confirm your email.'})
+                CustomValidationError({'email': 'A confirmation email has been sent. Please confirm your email.'})
         
         user = super().save(request)
         user.full_name = self.data.get('full_name', '')
@@ -88,7 +95,7 @@ class ChangeEmailSerializer(serializers.Serializer):
 
     def validate_email(self, value):
         if EmailAddress.objects.filter(email=value).exists() or User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("This email is already in use.")
+            raise CustomValidationError("This email is already in use.")
         return value
 
     def save(self, user):

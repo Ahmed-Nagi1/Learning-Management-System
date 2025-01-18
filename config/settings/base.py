@@ -320,18 +320,24 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_LOGOUT_ON_GET = True
-LOGOUT_ON_PASSWORD_CHANGE = False
+ACCOUNT_LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_CHANGE_EMAIL = True
+# ACCOUNT_EMAIL_VERIFICATION_BY_CODE_ENABLED = True
+HEADLESS_SERVE_SPECIFICATION = True
+
 ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_MAX_EMAIL_ADDRESSES = 2
+
 ACCOUNT_EMAIL_CONFIRMATION_ANONYMOUS_REDIRECT_URL = None
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = None
 # ACCOUNT_RATE_LIMITS = {
 #         "confirm_email": "1/4m", # 1 confirmation email every 4 minutes
 # }
 HEADLESS_FRONTEND_URLS = {
+    "account_signup":"http://localhost:3000/account/signup",
     "account_confirm_email": "http://127.0.0.1:3000/account/email-confirmation/{key}/",
     # Key placeholders are automatically populated. You are free to adjust this
     # to your own needs, e.g.
@@ -368,7 +374,7 @@ REST_FRAMEWORK = {
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
     "DEFAULT_PERMISSION_CLASSES": (
-        'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.AllowAny',
         "rest_framework.permissions.IsAuthenticated",
         ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
