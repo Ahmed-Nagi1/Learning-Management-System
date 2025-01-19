@@ -49,7 +49,7 @@ class Lesson(models.Model):
     module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='lessons', verbose_name="Module")
     file = models.FileField(upload_to='lesson_files/', null=True, blank=True, verbose_name="Attached File")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, verbose_name="Created By")
-    #order = models.IntegerField(null=True, blank=True)
+    quiz = models.JSONField(null=True)
 
     def str(self):
         return self.title
@@ -57,27 +57,13 @@ class Lesson(models.Model):
 # Table for enrollments (Enrollment)
 class Enrollment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='enrollments', verbose_name="Student")
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students_enrollments', verbose_name="Student")
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='enrollments', verbose_name="Course")
     enrolled_at = models.DateTimeField(auto_now_add=True, verbose_name="Enrollment Date")
     completed = models.BooleanField(default=False, verbose_name="Completed")
 
     def str(self):
         return f"{self.student.username} - {self.course.title}"
-
-# Table for quizzes (Quiz)
-class Quiz(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    title = models.CharField(max_length=255, verbose_name="Quiz Title")
-    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name='quiz', verbose_name="Module")
-    questions = models.JSONField(verbose_name="Questions", null=True)  # Stores questions as a JSON list
-
-    def str(self):
-        return self.title
-
-
-    def str(self):
-        return f"{self.student.username} - {self.quiz.title}"
 
 # Table for certificates (Certificate)
 class Certificate(models.Model):

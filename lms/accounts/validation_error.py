@@ -1,4 +1,15 @@
 from rest_framework.exceptions import APIException
+from rest_framework.response import Response
+from rest_framework import status
+
+
+class CustomSuccessResponse(Response):
+    def __init__(self, detail=None, code=status.HTTP_200_OK):
+        data = {"success": True}
+        if detail is not None:
+            data["detail"] = detail
+        super().__init__(data, status=code)
+
 
 
 class CustomValidationError(APIException):

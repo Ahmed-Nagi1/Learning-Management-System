@@ -7,7 +7,9 @@ router.register(r'courses', CourseViewSet, basename='course')
 router.register(r'modules', ModuleViewSet, basename='modules')
 router.register(r'lessons', LessonViewSet, basename='lessons')
 router.register(r'enrollment', EnrollmentViewSet, basename='enrollment')
-router.register(r'quiz', QuizViewSet, basename='quiz')
 # router.register(r'certificate', CertificateViewSet, basename='certificate')
 
-urlpatterns = router.urls
+urlpatterns = [
+    path('private-enrollment/', PrivateEnrollment.as_view()),
+
+] + router.urls

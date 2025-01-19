@@ -26,11 +26,7 @@ class EnrollmentAdmin(admin.ModelAdmin):
     search_fields = ('student__username', 'course__title')
     list_filter = ('enrolled_at', 'completed')
 
-@admin.register(Quiz)
-class QuizAdmin(admin.ModelAdmin):
-    list_display = ('title', 'module')
-    search_fields = ('title', 'module__title')
-    list_filter = ('module',)
+
 
 @admin.register(Certificate)
 class CertificateAdmin(admin.ModelAdmin):

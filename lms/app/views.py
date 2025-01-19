@@ -4,11 +4,16 @@ from .models import *
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from .permissions import IsOwnerOrReadOnly, IsAdmin
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
+from django.contrib.auth import get_user_model
+from accounts.validation_error import CustomSuccessResponse, CustomValidationError
 
+
+User = get_user_model()
 
 class CourseViewSet(ModelViewSet):
     """
@@ -22,6 +27,7 @@ class CourseViewSet(ModelViewSet):
         """
         Save the post data when creating a new course.
         """
+        
         serializer.save(owner=self.request.user)
         
     @action(detail=False, methods=['get'], url_path='my-courses', url_name='my_courses')
@@ -32,10 +38,16 @@ class CourseViewSet(ModelViewSet):
         
         my_courses = Course.objects.filter(owner=request.user)
     
-        # Serialize the data
+        total_students = Enrollment.objects.filter(course__in=my_courses).values('student').distinct().count()
+    
+    # Serialize the data
         serializer = self.get_serializer(my_courses, many=True)
+        response_data = {
+            "total_students": total_students,  # Add the total count of students
+            "courses": serializer.data         # Include detailed courses data
+        }
         
-        return Response(serializer.data)
+        return Response(response_data)
 
 
 
@@ -227,9 +239,13 @@ class EnrollmentViewSet(ModelViewSet):
         except Course.DoesNotExist:
             return Response({"detail": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        if course.is_paid:
+            return Response({"detail": "This is paid"}, status=status.HTTP_404_NOT_FOUND)
+
         if Enrollment.objects.filter(student=request.user, course=course).exists():
             return Response({"detail": "You are already subscribed to this course."}, status=status.HTTP_404_NOT_FOUND)
-        elif course.owner == request.user:
+
+        if course.owner == request.user:
             return Response({"detail": "You can't enroll in your course"}, status=status.HTTP_404_NOT_FOUND)
         
         # Create a new enrollment
@@ -237,61 +253,7 @@ class EnrollmentViewSet(ModelViewSet):
         serializer = self.get_serializer(enrollment)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    
-    
-class QuizViewSet(ModelViewSet):
-    queryset = Quiz.objects.all()
-    serializer_class = QuizSerializer
-    permission_classes = [IsAuthenticated]
-    def create(self, request, *args, **kwargs):
-        
-        # Ensure the user is an owner
-        if request.user.role != 'owner':
-            return Response({"detail": "Only owners can create quizzes"}, status=status.HTTP_403_FORBIDDEN)
-        # Get course data from the request
-        moduleId = request.data.get('module')
-        # Check if the course exists
-        try:
-            module = Module.objects.get(id=moduleId)
-        except Course.DoesNotExist:
-            return Response({"detail": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
-        # Ensure the current owner is the course owner
-        if module.course.owner != request.user:
-            return Response({"detail": "You can only create quizzes for your own courses"}, status=status.HTTP_403_FORBIDDEN)
-        # Create a new quiz
-        quiz = Quiz.objects.create(module=module)
-        serializer = self.get_serializer(quiz)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
-    
-    def update(self, request, *args, **kwargs):
-        # Ensure the user is an owner
-        if request.user.role != 'owner':
-            return Response({"detail": "Only owners can update quizzes"}, status=status.HTTP_403_FORBIDDEN)
-        # Get the quiz object to update
-        quiz = self.get_object()
-        # Ensure the current owner is the course owner
-        if quiz.module.course.owner != request.user:
-            return Response({"detail": "You can only update quizzes for your own courses"}, status=status.HTTP_403_FORBIDDEN)
-        # Update the quiz
-        serializer = self.get_serializer(quiz, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    def destroy(self, request, *args, **kwargs):
-        
-        # Ensure the user is an owner
-        if request.user.role != 'owner':
-            return Response({"detail": "Only owners can delete quizzes"}, status=status.HTTP_403_FORBIDDEN)
-        # Get the quiz object to delete
-        quiz = self.get_object()
-        # Ensure the current owner is the course owner
-        if quiz.module.course.owner != request.user:
-            return Response({"detail": "You can only delete quizzes for your own courses"}, status=status.HTTP_403_FORBIDDEN)
-        # Delete the quiz
-        quiz.delete()
-        return Response({"detail": "Quiz deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
-   
+
     
 # class CertificateViewSet(ModelViewSet):
 #     queryset = Certificate.objects.all()
@@ -329,4 +291,52 @@ class QuizViewSet(ModelViewSet):
 #         certificate = Certificate.objects.create(course=course, student=student)
 #         serializer = self.get_serializer(certificate)
 #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+
+
+class PrivateEnrollment(APIView):
+    def post(self, request):
+        course_id = request.data.get('course')
+        student_email = request.data.get('student_email').strip()
+
+        # Check if the course and student exists
+        course = Course.objects.filter(id=course_id).first()
+        student = User.objects.filter(email=student_email).first()
+
+        if not course:
+            raise  CustomValidationError("Course not found", code=status.HTTP_404_NOT_FOUND)
+
+        if not student:
+            raise  CustomValidationError("User not found", code=status.HTTP_404_NOT_FOUND)
+
+        if student_email == request.user.email:
+            raise  CustomValidationError("You can't add yourself", code=status.HTTP_400_BAD_REQUEST)
+
+        if Enrollment.objects.filter(student__email=student_email).exists():
+            raise CustomValidationError("This user already exists", code=status.HTTP_400_BAD_REQUEST)
+
+        # Check if the course is a paid course
+        if not course.is_paid:
+            raise  CustomValidationError("Course is not paid", code=status.HTTP_400_BAD_REQUEST)
+
+        # Allow only the course owner to enroll students
+        if course.owner != request.user:
+            raise  CustomValidationError("You do not have permission to enroll students in this course",
+                            code=status.HTTP_403_FORBIDDEN)
+
+        # Validate the data before saving
+        enrollment_data = {
+            'course': course.id,
+            'student': student.id
+        }
+        serializer = PrivateEnrollmentSerializer(data=enrollment_data)
+        if serializer.is_valid():
+            serializer.save()
+            return CustomSuccessResponse(f"Student {student.full_name} has been added", code=status.HTTP_201_CREATED)
+
+        return CustomValidationError(serializer.errors, code=status.HTTP_400_BAD_REQUEST)
+
+
+        
+
     

@@ -12,10 +12,14 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 
 class CourseSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(source='owner.username', read_only=True)
+    students_in_course = serializers.SerializerMethodField()
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'is_paid', 'price', 'image', 'owner_name', 'created_at', 'updated_at']
+        fields = ['id', 'title', 'description', 'is_paid', 'price', 'image', 'owner_name', 'students_in_course', 'created_at', 'updated_at']
         read_only_fields = ['created_at', 'updated_at']
+
+    def get_students_in_course(self, obj):
+        return Enrollment.objects.filter(course=obj).values('student').distinct().count()
 
 
 
@@ -64,15 +68,16 @@ class EnrollmentSerializer(serializers.ModelSerializer):
             "rating": course.rating,
         }
 
-        
-        
-class QuizSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Quiz
-        fields = ['id', 'title', 'module', 'questions']
-        
+
         
 class CertificateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Certificate
         fields = ['student', 'course', 'issued_at', 'certificate_file']
+
+
+class PrivateEnrollmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Enrollment
+        fields = ['id', 'course', 'student', 'enrolled_at']
+        read_only_fields = ['enrolled_at']
