@@ -299,19 +299,22 @@ class EnrollmentViewSet(ModelViewSet):
             return CustomSuccessResponse(f"Student {student.full_name} has been added",
                                          code=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        raise CustomValidationError(serializer.errors, code=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], url_path='get-my-students')
     def get_my_students(self, request):
         """
         fetch detailed information about my students in my courses.
         """
-        course = request.query_params('course')
+        course = request.query_params.get('course')
         my_courses = Course.objects.filter(owner=request.user, id=course)
-        my_students = Enrollment.objects.filter(course__in=my_courses).values('student').distinct()
+        my_students = (
+        Enrollment.objects.filter(course__in=my_courses)
+        .values('student__full_name', 'student__email')
+        .distinct()
+    )
 
-        serializer = CourseSerializer(my_students, many=True)
-        return Response(serializer.data)
+        return CustomSuccessResponse(list(my_students), code=200)
 
     
 

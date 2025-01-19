@@ -12,8 +12,13 @@ from rest_framework.response import Response
 from .validation_error import CustomValidationError
 
 
-
 User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'full_name']
+
 
 class CustomLoginSerializer(LoginSerializer):
     

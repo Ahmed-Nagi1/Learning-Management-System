@@ -13,4 +13,5 @@ urlpatterns = [
         name='password_reset_confirm',
     ),
     path('change-email/', views.ChangeEmailView.as_view(), name='change_email'),
+    path('user-info/', views.UserView.as_view()),
 ]

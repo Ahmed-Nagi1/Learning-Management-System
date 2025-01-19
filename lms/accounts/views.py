@@ -6,6 +6,43 @@ from allauth.account.models import EmailConfirmation, EmailConfirmationHMAC, Ema
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import ChangeEmailSerializer
 from asgiref.sync import sync_to_async
+from django.contrib.auth import get_user_model
+from .validation_error import CustomSuccessResponse, CustomValidationError
+
+User = get_user_model()
+
+class UserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user 
+        image_url = request.build_absolute_uri(user.image.url) if user.image else None
+        return CustomSuccessResponse({
+            "name": user.full_name,
+            "image": image_url
+        })
+
+    def patch(self, request):
+        print(request.data)
+        user = request.user
+        full_name = request.data.get('full_name')
+
+        if full_name:
+            user.full_name = full_name
+
+        profile_image = request.FILES.get('profile_image')
+        if profile_image:
+            user.image = profile_image
+            print("Ok")
+        user.save()
+
+        return CustomSuccessResponse(
+            {"ok"},
+            code=status.HTTP_200_OK
+        )
+                
+
+
 
 class ChangeEmailView(APIView):
 
