@@ -10,6 +10,5 @@ router.register(r'enrollment', EnrollmentViewSet, basename='enrollment')
 # router.register(r'certificate', CertificateViewSet, basename='certificate')
 
 urlpatterns = [
-    path('private-enrollment/', PrivateEnrollment.as_view()),
 
 ] + router.urls

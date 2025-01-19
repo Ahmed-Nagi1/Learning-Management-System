@@ -254,75 +254,39 @@ class EnrollmentViewSet(ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-    
-# class CertificateViewSet(ModelViewSet):
-#     queryset = Certificate.objects.all()
-#     serializer_class = CertificateSerializer
-#     permission_classes = []
-    
-#     def get_permissions(self):
-#         if self.action == 'create':
-#             # permission_classes = [Isowner]
-#             pass
-#         elif self.action in ['update', 'destroy']:
-#             permission_classes = [IsAdmin]
-#         # else:
-#         #     permission_classes = []  
-#         # return [permission() for permission in permission_classes]
-        
-        
-#     def create(self, request, *args, **kwargs):
-        
-#         # Get course data from the request
-#         courseId = request.data.get('course')
-#         student_id = request.data.get('student')
-#         # Check if the course exists
-#         try:
-#             course = Course.objects.get(id=courseId)
-#             student = User.objects.get(id=student_id, role='student')
-#         except User.DoesNotExist:
-#             return Response({"detail": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
-#         except Course.DoesNotExist:
-#             return Response({"detail": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
-#         # Ensure the current owner is the course owner
-#         if course.owner != request.user:
-#             return Response({"detail": "You can only create certificate for your own courses"}, status=status.HTTP_403_FORBIDDEN)
-        
-#         certificate = Certificate.objects.create(course=course, student=student)
-#         serializer = self.get_serializer(certificate)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+    @action(detail=False, methods=['post'], url_path='private-enrollment')
+    def private_enrollment( self, request):
+        """
+            Handles the private enrollment of a student into a specific course.
 
-
-class PrivateEnrollment(APIView):
-    def post(self, request):
+            This custom action allows the owner of a paid course to manually enroll a student
+            using their email address. The course ID is provided in the URL, and the student's 
+            email is received in the request body.
+        """
         course_id = request.data.get('course')
         student_email = request.data.get('student_email').strip()
 
-        # Check if the course and student exists
+        # Check if the course & student exists
         course = Course.objects.filter(id=course_id).first()
         student = User.objects.filter(email=student_email).first()
 
-        if not course:
-            raise  CustomValidationError("Course not found", code=status.HTTP_404_NOT_FOUND)
-
         if not student:
-            raise  CustomValidationError("User not found", code=status.HTTP_404_NOT_FOUND)
+            raise CustomValidationError("User not found", code=status.HTTP_404_NOT_FOUND)
 
         if student_email == request.user.email:
-            raise  CustomValidationError("You can't add yourself", code=status.HTTP_400_BAD_REQUEST)
+            raise CustomValidationError("You can't add yourself", code=status.HTTP_400_BAD_REQUEST)
 
-        if Enrollment.objects.filter(student__email=student_email).exists():
+
+        if Enrollment.objects.filter(student__email=student_email, course=course).exists():
             raise CustomValidationError("This user already exists", code=status.HTTP_400_BAD_REQUEST)
 
-        # Check if the course is a paid course
         if not course.is_paid:
-            raise  CustomValidationError("Course is not paid", code=status.HTTP_400_BAD_REQUEST)
+            raise CustomValidationError("Course is not paid", code=status.HTTP_400_BAD_REQUEST)
 
         # Allow only the course owner to enroll students
         if course.owner != request.user:
-            raise  CustomValidationError("You do not have permission to enroll students in this course",
-                            code=status.HTTP_403_FORBIDDEN)
+            raise CustomValidationError("You do not have permission to enroll students in this course",
+                                        code=status.HTTP_403_FORBIDDEN)
 
         # Validate the data before saving
         enrollment_data = {
@@ -332,9 +296,25 @@ class PrivateEnrollment(APIView):
         serializer = PrivateEnrollmentSerializer(data=enrollment_data)
         if serializer.is_valid():
             serializer.save()
-            return CustomSuccessResponse(f"Student {student.full_name} has been added", code=status.HTTP_201_CREATED)
+            return CustomSuccessResponse(f"Student {student.full_name} has been added",
+                                         code=status.HTTP_201_CREATED)
 
-        return CustomValidationError(serializer.errors, code=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['get'], url_path='get-my-students')
+    def get_my_students(self, request):
+        """
+        fetch detailed information about my students in my courses.
+        """
+        course = request.query_params('course')
+        my_courses = Course.objects.filter(owner=request.user, id=course)
+        my_students = Enrollment.objects.filter(course__in=my_courses).values('student').distinct()
+
+        serializer = CourseSerializer(my_students, many=True)
+        return Response(serializer.data)
+
+    
+
 
 
         
