@@ -378,6 +378,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.IsAuthenticated",
         ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    'EXCEPTION_HANDLER': 'utils.exception_handler.custom_exception_handler',
 }
 REST_AUTH = {
     'LOGIN_SERIALIZER': 'lms.accounts.serializers.CustomLoginSerializer',

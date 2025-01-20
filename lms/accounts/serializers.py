@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from allauth.account.utils import send_email_confirmation
 from rest_framework.response import Response
-from .validation_error import CustomValidationError
+from lms.utils.exception_handler import CustomValidationError
 
 
 User = get_user_model()

@@ -7,7 +7,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import ChangeEmailSerializer
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
-from .validation_error import CustomSuccessResponse, CustomValidationError
 
 User = get_user_model()
 
@@ -17,7 +16,7 @@ class UserView(APIView):
     def get(self, request):
         user = request.user 
         image_url = request.build_absolute_uri(user.image.url) if user.image else None
-        return CustomSuccessResponse({
+        return Response({
             "name": user.full_name,
             "image": image_url
         })
@@ -36,9 +35,9 @@ class UserView(APIView):
             print("Ok")
         user.save()
 
-        return CustomSuccessResponse(
+        return Response(
             {"ok"},
-            code=status.HTTP_200_OK
+            status=status.HTTP_200_OK
         )
                 
 

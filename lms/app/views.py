@@ -10,7 +10,7 @@ from .permissions import IsOwnerOrReadOnly, IsAdmin
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth import get_user_model
-from accounts.validation_error import CustomSuccessResponse, CustomValidationError
+from lms.utils.exception_handler import CustomValidationError
 
 
 User = get_user_model()
@@ -271,22 +271,22 @@ class EnrollmentViewSet(ModelViewSet):
         student = User.objects.filter(email=student_email).first()
 
         if not student:
-            raise CustomValidationError("User not found", code=status.HTTP_404_NOT_FOUND)
+            raise CustomValidationError("User not found", status=status.HTTP_404_NOT_FOUND)
 
         if student_email == request.user.email:
-            raise CustomValidationError("You can't add yourself", code=status.HTTP_400_BAD_REQUEST)
+            raise CustomValidationError("You can't add yourself", status=status.HTTP_400_BAD_REQUEST)
 
 
         if Enrollment.objects.filter(student__email=student_email, course=course).exists():
-            raise CustomValidationError("This user already exists", code=status.HTTP_400_BAD_REQUEST)
+            raise CustomValidationError("This user already exists", status=status.HTTP_400_BAD_REQUEST)
 
         if not course.is_paid:
-            raise CustomValidationError("Course is not paid", code=status.HTTP_400_BAD_REQUEST)
+            raise CustomValidationError("Course is not paid", status=status.HTTP_400_BAD_REQUEST)
 
         # Allow only the course owner to enroll students
         if course.owner != request.user:
             raise CustomValidationError("You do not have permission to enroll students in this course",
-                                        code=status.HTTP_403_FORBIDDEN)
+                                        status=status.HTTP_403_FORBIDDEN)
 
         # Validate the data before saving
         enrollment_data = {
@@ -296,10 +296,10 @@ class EnrollmentViewSet(ModelViewSet):
         serializer = PrivateEnrollmentSerializer(data=enrollment_data)
         if serializer.is_valid():
             serializer.save()
-            return CustomSuccessResponse(f"Student {student.full_name} has been added",
-                                         code=status.HTTP_201_CREATED)
+            return Response(f"Student {student.full_name} has been added",
+                                         status=status.HTTP_201_CREATED)
 
-        raise CustomValidationError(serializer.errors, code=status.HTTP_400_BAD_REQUEST)
+        raise CustomValidationError(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['get'], url_path='get-my-students')
     def get_my_students(self, request):
@@ -314,7 +314,7 @@ class EnrollmentViewSet(ModelViewSet):
         .distinct()
     )
 
-        return CustomSuccessResponse(list(my_students), code=200)
+        return Response(list(my_students), status=200)
 
     
 
