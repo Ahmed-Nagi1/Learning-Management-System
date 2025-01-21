@@ -74,7 +74,6 @@ class Certificate(models.Model):
 
 
 
-
 class AD(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()

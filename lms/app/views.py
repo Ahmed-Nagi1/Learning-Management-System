@@ -145,23 +145,20 @@ class LessonViewSet(ModelViewSet):
         """
         Custom PATCH method to update a lesson.
         """
-        # الحصول على معرف الكائن (lesson_id) من الـ URL
+
         lesson_id = self.request.query_params.get('lesson_id')
         if not lesson_id:
             raise CustomValidationError({"detail": "Lesson ID is required in the URL."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # البحث عن الدرس
         lesson = Lesson.objects.filter(id=lesson_id).first()
         if not lesson:
             raise CustomValidationError({"detail": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # التحقق من الصلاحيات (مالك الكورس أو مسجل فيه)
         is_owner = lesson.module.course.owner == request.user
 
         if not is_owner:
             raise PermissionDenied("You do not have permission to update this lesson.")
 
-        # تحديث الدرس باستخدام البيانات المرسلة في الطلب
         serializer = self.get_serializer(lesson, data=request.data, partial=True)  # partial=True لتحديث الحقول المطلوبة فقط
         if serializer.is_valid():
             serializer.save()
@@ -185,7 +182,7 @@ class LessonViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # البحث عن الدرس
+
         try:
             lesson = Lesson.objects.get(id=lesson_id)
         except Lesson.DoesNotExist:
@@ -194,13 +191,11 @@ class LessonViewSet(ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # التحقق من الصلاحيات (مالك الكورس أو مسجل فيه)
         is_owner = lesson.module.course.owner == request.user
 
         if not is_owner:
             raise PermissionDenied("You do not have permission to delete this lesson.")
 
-        # حذف الدرس
         lesson.delete()
 
         return Response(
