@@ -6,11 +6,15 @@
   packages = [
     pkgs.docker
     pkgs.docker-compose
+    pkgs.sudo
   ];
   
   # Sets environment variables in the workspace
-  env = {};
+  env = {
+    PORT = "6000";
+  };
   services.docker.enable = true;
+  
   
   idx = {
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"

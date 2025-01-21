@@ -13,6 +13,7 @@ from django.contrib.auth import get_user_model
 from lms.utils.exception_handler import CustomValidationError
 
 
+
 User = get_user_model()
 
 class CourseViewSet(ModelViewSet):
@@ -32,21 +33,14 @@ class CourseViewSet(ModelViewSet):
         
     @action(detail=False, methods=['get'], url_path='my-courses', url_name='my_courses')
     def get_my_course(self, request):
-        """
-        Custom GET method to fetch detailed information about my courses.
-        """
-        
-        my_courses = Course.objects.filter(owner=request.user)
-    
+        my_courses = Course.objects.filter(owner=request.user).prefetch_related('enrollments__student')
         total_students = Enrollment.objects.filter(course__in=my_courses).values('student').distinct().count()
-    
-    # Serialize the data
+
         serializer = self.get_serializer(my_courses, many=True)
         response_data = {
-            "total_students": total_students,  # Add the total count of students
-            "courses": serializer.data         # Include detailed courses data
+            "total_students": total_students,
+            "courses": serializer.data
         }
-        
         return Response(response_data)
 
 
@@ -65,9 +59,9 @@ class ModuleViewSet(ModelViewSet):
         """
         course_id = self.request.query_params.get('pk')  
         if course_id:
-            course = Course.objects.filter(id=course_id).first()
+            course = Course.objects.filter(id=course_id).select_related('owner').first()
             if course:
-                return Module.objects.filter(course=course)
+                return Module.objects.filter(course=course).select_related('course')
         return Module.objects.none()
 
 
@@ -82,7 +76,7 @@ class ModuleViewSet(ModelViewSet):
             raise PermissionDenied("You do not have permission to create module.")
         
         if not course:
-            return Response(
+            raise CustomValidationError(
                 {"detail": "This course not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
@@ -116,7 +110,7 @@ class LessonViewSet(ModelViewSet):
             return Lesson.objects.none()  # Return no results if the module does not exist
 
         # Verify that the lesson exists and is associated with the module
-        lesson = Lesson.objects.filter(id=lesson_id, module=module).first()
+        lesson = Lesson.objects.filter(id=lesson_id, module=module).select_related('module__course__owner').first()
         if not lesson:
             return Lesson.objects.none()  # Return no results if the lesson does not exist or is not linked to the module
 
@@ -154,12 +148,12 @@ class LessonViewSet(ModelViewSet):
         # الحصول على معرف الكائن (lesson_id) من الـ URL
         lesson_id = self.request.query_params.get('lesson_id')
         if not lesson_id:
-            return Response({"detail": "Lesson ID is required in the URL."}, status=status.HTTP_400_BAD_REQUEST)
+            raise CustomValidationError({"detail": "Lesson ID is required in the URL."}, status=status.HTTP_400_BAD_REQUEST)
 
         # البحث عن الدرس
         lesson = Lesson.objects.filter(id=lesson_id).first()
         if not lesson:
-            return Response({"detail": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
+            raise CustomValidationError({"detail": "Lesson not found."}, status=status.HTTP_404_NOT_FOUND)
 
         # التحقق من الصلاحيات (مالك الكورس أو مسجل فيه)
         is_owner = lesson.module.course.owner == request.user
@@ -173,7 +167,7 @@ class LessonViewSet(ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        raise CustomValidationError(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
@@ -186,7 +180,7 @@ class LessonViewSet(ModelViewSet):
         # الحصول على معرف الكائن (lesson_id) من الـ URL
         lesson_id = request.query_params.get('lesson_id')
         if not lesson_id:
-            return Response(
+            raise CustomValidationError(
                 {"detail": "Lesson ID is required in the URL."},
                 status=status.HTTP_400_BAD_REQUEST
             )
@@ -195,7 +189,7 @@ class LessonViewSet(ModelViewSet):
         try:
             lesson = Lesson.objects.get(id=lesson_id)
         except Lesson.DoesNotExist:
-            return Response(
+            raise CustomValidationError(
                 {"detail": "Lesson not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
@@ -223,7 +217,7 @@ class EnrollmentViewSet(ModelViewSet):
     http_method_names = ['get', 'post', 'delete']
     
     def list(self, request, *args, **kwargs):
-        instance = Enrollment.objects.filter(student=request.user)
+        instance = Enrollment.objects.filter(student=request.user).select_related('course__owner')
         
         serializer = self.get_serializer(instance, many=True)
         return Response(serializer.data) 
@@ -237,16 +231,16 @@ class EnrollmentViewSet(ModelViewSet):
         try:
             course = Course.objects.get(id=course_id)
         except Course.DoesNotExist:
-            return Response({"detail": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+            raise CustomValidationError({"detail": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
 
         if course.is_paid:
-            return Response({"detail": "This is paid"}, status=status.HTTP_404_NOT_FOUND)
+            raise CustomValidationError({"detail": "This is paid"}, status=status.HTTP_404_NOT_FOUND)
 
         if Enrollment.objects.filter(student=request.user, course=course).exists():
-            return Response({"detail": "You are already subscribed to this course."}, status=status.HTTP_404_NOT_FOUND)
+            raise CustomValidationError({"detail": "You are already subscribed to this course."}, status=status.HTTP_404_NOT_FOUND)
 
         if course.owner == request.user:
-            return Response({"detail": "You can't enroll in your course"}, status=status.HTTP_404_NOT_FOUND)
+            raise CustomValidationError({"detail": "You can't enroll in your course"}, status=status.HTTP_404_NOT_FOUND)
         
         # Create a new enrollment
         enrollment = Enrollment.objects.create(student=request.user, course=course)
@@ -267,7 +261,7 @@ class EnrollmentViewSet(ModelViewSet):
         student_email = request.data.get('student_email').strip()
 
         # Check if the course & student exists
-        course = Course.objects.filter(id=course_id).first()
+        course = Course.objects.filter(id=course_id).select_related('owner').first()
         student = User.objects.filter(email=student_email).first()
 
         if not student:
@@ -304,17 +298,31 @@ class EnrollmentViewSet(ModelViewSet):
     @action(detail=False, methods=['get'], url_path='get-my-students')
     def get_my_students(self, request):
         """
-        fetch detailed information about my students in my courses.
+        Fetch detailed information about my students in a specific course.
         """
-        course = request.query_params.get('course')
-        my_courses = Course.objects.filter(owner=request.user, id=course)
+        course_id = request.query_params.get('course')  
+        if not course_id:
+            raise CustomValidationError(
+                {"detail": "Course ID is required in the query parameters."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+        try:
+            course = Course.objects.get(id=course_id, owner=request.user)
+        except Course.DoesNotExist:
+            raise CustomValidationError(
+                {"detail": "Course not found or you do not have permission to access it."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    
         my_students = (
-        Enrollment.objects.filter(course__in=my_courses)
-        .values('student__full_name', 'student__email')
-        .distinct()
-    )
+            Enrollment.objects.filter(course=course)
+            .select_related('student')
+            .values('student__full_name', 'student__email')
+            .distinct()
+        )
 
-        return Response(list(my_students), status=200)
+        return Response(list(my_students), status=status.HTTP_200_OK)
 
     
 

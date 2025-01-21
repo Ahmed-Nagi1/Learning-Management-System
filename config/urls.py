@@ -22,9 +22,7 @@ urlpatterns = [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
-    # User management
-    # path("users/", include("lms.users.urls", namespace="users")),
-    path("accounts/", include("allauth.urls")),
+    
     # path("auth/", include("allauth.headless.urls")),
     # Your stuff: custom urls includes go here
     # ...
@@ -37,16 +35,12 @@ if settings.DEBUG:
 
 # API URLS
 urlpatterns += [
+    path("api/accounts/", include("allauth.urls")),
 
-    # path('authw/', include('dj_rest_auth.urls')),
-    # path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    path('auth/', include('lms.accounts.urls')),
+    path('api/auth/', include('lms.accounts.urls')),
 
-    path('app/', include('lms.app.urls')),
+    path('api/app/', include('lms.app.urls')),
 
-
-    # API base url
-    # path("api/auth-token/", obtain_auth_token),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),
     path(
         "api/docs/",

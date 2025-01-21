@@ -12,5 +12,5 @@ services:
       - ./config:/app/config:z
       - ./lms:/app/lms:z
     ports:
-      - '9000:9000'
-    command: /start-docs
+      - '6000:6000'
+    command: mkdocs serve

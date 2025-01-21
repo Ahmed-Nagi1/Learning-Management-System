@@ -25,10 +25,6 @@ class IsOwnerOrReadOnly(BasePermission):
                 return obj.student == request.user
                 
 
-    
-    
-      
-  
   
   
 class IsAdmin(BasePermission):

@@ -1,60 +1,21 @@
-# define an alias for the specific python version used in this file.
-FROM docker.io/python:3.12.8-slim-bookworm AS python
+# Use a lightweight Python base image
+FROM python:3.12.8-alpine AS python
 
-
-# Python build stage
-FROM python AS python-build-stage
-
+# Python base stage
 ENV PYTHONDONTWRITEBYTECODE=1
-
-RUN apt-get update && apt-get install --no-install-recommends -y \
-  # dependencies for building Python packages
-  build-essential \
-  # psycopg dependencies
-  libpq-dev \
-  # cleaning up unused files
-  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-  && rm -rf /var/lib/apt/lists/*
-
-# Requirements are installed here to ensure they will be cached.
-COPY ./requirements /requirements
-
-# create python dependency wheels
-RUN pip wheel --no-cache-dir --wheel-dir /usr/src/app/wheels  \
-  -r /requirements/local.txt -r /requirements/production.txt \
-  && rm -rf /requirements
-
-
-# Python 'run' stage
-FROM python AS python-run-stage
-
-ARG BUILD_ENVIRONMENT
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
 
-RUN apt-get update && apt-get install --no-install-recommends -y \
-  # To run the Makefile
-  make \
-  # psycopg dependencies
-  libpq-dev \
-  # Translations dependencies
-  gettext \
-  # Uncomment below lines to enable Sphinx output to latex and pdf
-  # texlive-latex-recommended \
-  # texlive-fonts-recommended \
-  # texlive-latex-extra \
-  # latexmk \
-  # cleaning up unused files
-  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-  && rm -rf /var/lib/apt/lists/*
+# Install dependencies
+RUN apk update && apk add --no-cache \
+    # Runtime dependencies
+    make \
+    gettext \
+    && rm -rf /var/cache/apk/*
 
-# copy python dependency wheels from python-build-stage
-COPY --from=python-build-stage /usr/src/app/wheels /wheels
+# Install MkDocs and required plugins
+RUN pip install mkdocs==1.5.1 mkdocs-material==9.1.15 mkdocs-markdownextradata-plugin
 
-# use wheels to install python dependencies
-RUN pip install --no-cache /wheels/* \
-  && rm -rf /wheels
-
+# Copy the start script
 COPY ./compose/local/docs/start /start-docs
 RUN sed -i 's/\r$//g' /start-docs
 RUN chmod +x /start-docs

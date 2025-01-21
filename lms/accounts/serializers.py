@@ -78,10 +78,10 @@ class CustomRegisterSerializer(RegisterSerializer):
         email_address = EmailAddress.objects.filter(email=email).first()
         if email_address:
             if email_address.verified: 
-                CustomValidationError({'email': 'This email is already.'})
+                raise CustomValidationError({'email': 'This email is already.'})
             else: 
                 send_email_confirmation(request, email_address.user)
-                CustomValidationError({'email': 'A confirmation email has been sent. Please confirm your email.'})
+                raise CustomValidationError({'email': 'A confirmation email has been sent. Please confirm your email.'})
         
         user = super().save(request)
         user.full_name = self.data.get('full_name', '')

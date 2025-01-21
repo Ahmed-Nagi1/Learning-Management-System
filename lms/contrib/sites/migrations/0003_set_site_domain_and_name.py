@@ -6,7 +6,7 @@ http://cookiecutter-django.readthedocs.io/en/latest/faq.html#why-is-there-a-djan
 from django.conf import settings
 from django.db import migrations
 
-domain_name = "example.com" # Front end domain
+domain_name = "learngpt.tech" # Front end domain
 
 def _update_or_create_site_with_sequence(site_model, connection, domain, name):
     """Update or create the site with default ID and keep the DB sequence in sync."""

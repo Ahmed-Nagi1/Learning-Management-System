@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 from allauth.account.models import EmailAddress
 from dj_rest_auth.registration.serializers import RegisterSerializer
-
+from lms.utils.exception_handler import CustomValidationError
 
 
 

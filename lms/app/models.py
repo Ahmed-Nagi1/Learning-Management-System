@@ -5,7 +5,6 @@ from rest_framework.exceptions import ValidationError
 
 User = get_user_model()
 
-# Table for courses (Course)
 class Course(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     title = models.CharField(max_length=255, verbose_name="Course Title")
@@ -13,7 +12,7 @@ class Course(models.Model):
     image = models.ImageField(upload_to="courses/image", null=True)
     is_paid = models.BooleanField(default=False)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='courses_taught', verbose_name="Instructor")      
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='owner', verbose_name="Owner")      
     rating = models.PositiveSmallIntegerField(null=True, blank=True)  
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
@@ -29,7 +28,6 @@ class Course(models.Model):
             raise ValidationError({'price': 'Price must be empty for free products.'})
 
 
-# Table for modules (Module)
 class Module(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     title = models.CharField(max_length=255, verbose_name="Module Title")
@@ -40,7 +38,6 @@ class Module(models.Model):
     def str(self):
         return self.title
 
-# Table for lessons (Lesson)
 class Lesson(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     title = models.CharField(max_length=255, verbose_name="Lesson Title")
@@ -54,7 +51,6 @@ class Lesson(models.Model):
     def str(self):
         return self.title
 
-# Table for enrollments (Enrollment)
 class Enrollment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='students_enrollments', verbose_name="Student")
@@ -65,7 +61,6 @@ class Enrollment(models.Model):
     def str(self):
         return f"{self.student.username} - {self.course.title}"
 
-# Table for certificates (Certificate)
 class Certificate(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='certificates', verbose_name="Student")
@@ -75,3 +70,16 @@ class Certificate(models.Model):
 
     def str(self):
         return f"{self.student.username} - {self.course.title}"
+
+
+
+
+
+class AD(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    image = models.ImageField(upload_to='ads_images/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title

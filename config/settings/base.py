@@ -380,6 +380,7 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     'EXCEPTION_HANDLER': 'utils.exception_handler.custom_exception_handler',
 }
+
 REST_AUTH = {
     'LOGIN_SERIALIZER': 'lms.accounts.serializers.CustomLoginSerializer',
     'REGISTER_SERIALIZER': 'lms.accounts.serializers.CustomRegisterSerializer',
@@ -395,11 +396,11 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': 'SECRET_KEY',
+    'SIGNING_KEY': 'env("SIGNING_KEY")',
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
-# CORS_URLS_REGEX = r"^/api/.*$"
+CORS_URLS_REGEX = r"^/api/.*$"
 
 # By Default swagger ui is available only to admin user(s). You can change permission classes to change that
 # See more configuration options at https://drf-spectacular.readthedocs.io/en/latest/settings.html#settings

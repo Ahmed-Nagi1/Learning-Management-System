@@ -1,0 +1,67 @@
+# اسم الموقع
+site_name: My Project
+
+
+site_description: Learning Management System
+
+
+
+theme:
+  name: material
+  custom_dir: overrides   # تخصيص السمات (اختياري)
+  palette:
+    - scheme: default     # الوضع الافتراضي
+      primary: indigo     # اللون الأساسي
+      accent: pink        # اللون الثانوي
+    - scheme: slate       # وضع داكن
+      primary: deep purple
+      accent: amber
+  # features:
+  #   - navigation.tabs     # استخدام التبويبات للتنقل
+  #   - navigation.expand   # توسيع القوائم تلقائيًا
+  #   - toc.integrate       # دمج قائمة المحتويات (Table of Contents) مع التنقل
+  # logo: images/logo.png   # شعار الموقع (اختياري)
+  # favicon: images/favicon.ico # أيقونة الموقع (اختياري)
+
+# التنقل (Navigation)
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Introduction: getting-started/introduction.md
+      - Installation: getting-started/installation.md
+  - Reference:
+      - API Documentation: reference/api.md
+      - CLI: reference/cli.md
+  - About: about.md
+
+# الإضافات (Plugins)
+plugins:
+  - search               # محرك البحث
+  - markdownextradata    # إدراج البيانات الإضافية (اختياري)
+
+# ملحقات Markdown
+markdown_extensions:
+  - admonition           # الملاحظات (تحذير، نصيحة، إلخ)
+  - codehilite           # تمييز الأكواد
+  - toc                  # قائمة المحتويات
+  - tables               # دعم الجداول
+  - pymdownx.arithmatex  # دعم LaTeX (للمعادلات الرياضية)
+  - pymdownx.superfences # تحسين تداخل الأكواد والجداول
+
+# إعدادات البحث
+extra:
+  search:
+    lang: en             # لغة البحث (يدعم الإنجليزية، الفرنسية، إلخ)
+    separator: "[\\s\\-]+" # الفاصل للبحث
+
+# بيانات إضافية (اختيارية)
+extra_css:
+  - styles/custom.css    # ملف CSS مخصص
+extra_javascript:
+  - scripts/custom.js    # ملف JavaScript مخصص
+
+# إعدادات مخرجات البناء
+# site_dir: site           # مسار مجلد الإخراج
+docs_dir: docs           # مسار مجلد الوثائق
+
+dev_addr: 0.0.0.0:6000
